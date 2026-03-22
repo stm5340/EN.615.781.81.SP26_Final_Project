@@ -1,0 +1,12 @@
+# Latex intermediate files
+*.aux
+*.bbl
+*.gz
+*blx.bib
+
+# Non-text files
+*.pdf
+
+# Other temporary files
+*.swp
+

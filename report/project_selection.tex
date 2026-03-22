@@ -1,0 +1,46 @@
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.5in,headheight=42pt,footskip=42pt,voffset=12pt,bottom=120pt]{geometry}
+\usepackage{amssymb}
+\usepackage[version=4]{mhchem}
+\usepackage{stmaryrd}
+\usepackage{bbold}
+\usepackage[export]{adjustbox}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{lastpage}
+\usepackage{hyperref}
+
+\SetSymbolFont{stmry}{bold}{U}{stmry}{m}{n}
+
+\usepackage[backend=biber]{biblatex}
+\addbibresource{bibliography.bib}
+
+\pagestyle{fancy}
+\fancyhf{}
+    \rhead{
+        Uyen Nguyen, Shawn McLain, Ashley Kuta \\
+        EN.615.781.81 SP26\\
+        Project Topic Selection\\
+    }
+    \rfoot{Page \thepage \space of \pageref{LastPage}}
+\addtolength{\topmargin}{.5in}
+
+\begin{document}
+\section*{Quantum Key Distribution}
+Our team will implement the BB84 quantum key distribution protocol using Qiskit. We will begin by analyzing the ideal scenario, where the quantum channel is noiseless and no eavesdropper is present. We will then extend this model to a more realistic setting that includes both channel noise and the presence of Eve. To address this general case, we will introduce two classical post-processing steps: error correction and privacy amplification. Finally, we will demonstrate how eavesdropping and man-in-the-middle attacks on the quantum channel affect the raw-key rate, how Alice and Bob can detect Eve’s presence and terminate the protocol if necessary, how channel noise degrades performance and informs abort decisions, and how the final shared key can be used for secure message encryption and decryption. 
+
+\nocite{nielsen2010quantum}
+\nocite{bennett2014quantum}
+\nocite{PhysRevLett.68.3121}
+\nocite{PhysRevLett.67.661}
+\nocite{10.1145/3575879.3576022}
+\nocite{PhysRevLett.92.057901}
+\nocite{10.1145/1008908.1008920}
+\nocite{Dixon2008}
+\nocite{Curty2010}
+
+\printbibliography
+
+\end{document}
