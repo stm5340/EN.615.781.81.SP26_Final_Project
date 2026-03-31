@@ -9,4 +9,4 @@
 
 # Other temporary files
 *.swp
-
+*.egg-info

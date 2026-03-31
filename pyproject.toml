@@ -1,0 +1,19 @@
+[build-system]
+# Specifies the build requirements and backend tool
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "final_project"
+version = "0.0.1"
+authors = [
+    {name = "Shawn McLain", email = "smclain4@jh.edu" }
+]
+description = "Final project for the 2026 spring semester of quantum information processing."
+readme = "README.md"
+requires-python = ">=3.11"
+
+dependencies = [
+    "qiskit",
+    "numpy",
+]
