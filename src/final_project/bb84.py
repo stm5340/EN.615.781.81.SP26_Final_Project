@@ -1,9 +1,10 @@
 from copy import deepcopy
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from dataclasses import dataclass
 import numpy as np
 from numpy.typing import NDArray
 from qiskit import QuantumCircuit, transpile
+from qiskit.circuit import Clbit
 from qiskit_aer import AerSimulator, AerJob
 from itertools import compress
 
@@ -16,16 +17,21 @@ BIT_CHOICES = [0, 1]
 
 class BB84(QuantumCircuit):
     """
-    Class that implements a BB84 circuit with no eavesdropping using the qiskit library's QuantumCircuit class
+    Class that implements a BB84 circuit with configurable eavesdropping using the qiskit library's QuantumCircuit class
     """
 
     input_bit: int = None
     alice_basis: str = None
     bob_basis: str = None
-    eve_basis: str = None
+    eve_basis: Optional[str] = None
 
     def __init__(
-        self, input_bit: int, alice_basis: str, bob_basis: str, eve_basis: str
+        self,
+        input_bit: int,
+        alice_basis: str,
+        bob_basis: str,
+        eve_basis: str,
+        eve_present: bool = False,
     ):
 
         super().__init__(1, 1, name="BB84")
@@ -33,7 +39,14 @@ class BB84(QuantumCircuit):
         if input_bit != 0 and input_bit != 1:
             raise ValueError("Input bit must take the classical state of '0' or '1'")
 
-        self.initialize(str(input_bit))
+        if input_bit == 0:
+            # Qiskit initializes qubit in |0> state, no need to do anything
+            pass
+        else:
+            # Apply a bit flip to get the state |1>
+            self.x(0)
+
+        self.input_bit = input_bit
 
         if alice_basis == "Z":  # Alice chooses to prepare the message in the Z-basis
             self.id(0)
@@ -42,37 +55,38 @@ class BB84(QuantumCircuit):
         else:
             raise ValueError("Alice must choose an input basis of 'Z' or 'X'")
 
-        if eve_basis == "Z":  # Eve chooses to prepare the message in the Z-basis
-            self.id(0)
-        elif eve_basis == "X":  # Eve chooses to prepare the message in the X-basis
-            self.h(0)
-        else:
-            raise ValueError("Eve must choose an input basis of 'Z' or 'X'")
+        self.alice_basis = alice_basis
 
-        self.measure(0, 0)  # Eve measures the messages ("intercept")
+        if eve_present:
+            if eve_basis == "Z":  # Eve chooses to prepare the message in the Z-basis
+                self.id(0)
+            elif eve_basis == "X":  # Eve chooses to prepare the message in the X-basis
+                self.h(0)
+            else:
+                raise ValueError("Eve must choose an input basis of 'Z' or 'X'")
 
-        cbit = self.clbits[
-            0
-        ]  # Classical bit value of zeroth index qubit post-measurement
-        self.reset(
-            0
-        )  # Reset the zeroth index qubit since Eve has to resend the message
+            self.measure(0, 0)  # Eve measures the messages ("intercept")
 
-        if cbit == 0:
-            # Eve's basis choice didn't yield a positive measurement
-            # She can't recreate the supposed initial state since she doesn't
-            # have enough information.
-            self.initialize("0")
-        else:
-            # Eve's basis choice yielded a positive measurement
-            self.initialize("1")
+            cbit: Clbit = self.clbits[
+                0
+            ]  # Classical bit value of zeroth index qubit post-measurement
+            self.reset(
+                0
+            )  # Reset the zeroth index qubit since Eve has to resend the message
 
-        if eve_basis == "Z":  # Eve chooses to resend the message in the Z-basis
-            self.id(0)
-        elif eve_basis == "X":  # Eve chooses to resend the message in the X-basis
-            self.h(0)
-        else:
-            raise ValueError("Eve must choose an input basis of 'Z' or 'X'")
+            with self.if_test((cbit, 1)) as else_:
+                self.x(0)
+            with else_:
+                self.id(0)
+
+            if eve_basis == "Z":  # Eve chooses to resend the message in the Z-basis
+                self.id(0)
+            elif eve_basis == "X":  # Eve chooses to resend the message in the X-basis
+                self.h(0)
+            else:
+                raise ValueError("Eve must choose an input basis of 'Z' or 'X'")
+
+            self.eve_basis = eve_basis
 
         if bob_basis == "Z":  # Bob chooses to measure the message in the Z-basis
             self.id(0)
@@ -81,10 +95,7 @@ class BB84(QuantumCircuit):
         else:
             raise ValueError("Bob must choose an input basis of 'Z' or 'X'")
 
-        self.input_bit = input_bit
-        self.alice_basis = alice_basis
         self.bob_basis = bob_basis
-        self.eve_basis = eve_basis
 
         self.measure(0, 0)  # Measure the first register (zeroth index)
 
@@ -115,7 +126,9 @@ class SimulationInputs:
         return self, raw
 
 
-def create_simulation_space(n_messages: int) -> SimulationInputs:
+def create_simulation_space(
+    n_messages: int, eve_present: bool = False
+) -> SimulationInputs:
     """
     Creates a set of BB84 circuits where each input parameter is drawn from a uniform distribution
     over the possible range of values
@@ -131,7 +144,13 @@ def create_simulation_space(n_messages: int) -> SimulationInputs:
         bob_bases,
         eve_bases,
         [
-            BB84(input_bits[ii], alice_bases[ii], bob_bases[ii], eve_bases[ii])
+            BB84(
+                input_bits[ii],
+                alice_bases[ii],
+                bob_bases[ii],
+                eve_bases[ii],
+                eve_present,
+            )
             for ii in range(n_messages)
         ],
     )
@@ -164,11 +183,16 @@ def bit_error_rate(input_bits: NDArray[np.int64], output_bits: NDArray[np.int64]
     if np.size(input_bits) != np.size(output_bits):
         raise ValueError("input_bits and output_bits must be of the same size")
 
-    return np.sum(input_bits.flatten() != output_bits.flatten()) / np.size(input_bits)
+    if np.size(input_bits) == 0:
+        return np.nan
+    else:
+        return np.sum(input_bits.flatten() != output_bits.flatten()) / np.size(
+            input_bits
+        )
 
 
-def main() -> None:
-    sim_inputs = create_simulation_space(n_messages=128)
+def simulate_no_eve_present() -> None:
+    sim_inputs = create_simulation_space(n_messages=2**12)
     output_bits = simulate_communication(sim_inputs=sim_inputs)
     output_bits = output_bits[sim_inputs.alice_bases == sim_inputs.bob_bases]
     sim_inputs.discard_data()  # Remove inputs where Alice and Bob don't have the same basis
@@ -176,6 +200,19 @@ def main() -> None:
     print(f"Computed quantum bit error rate in simulation: {qber}")
 
 
+def simulate_eve_present() -> None:
+
+    qber: List = []
+    sim_inputs = create_simulation_space(n_messages=2**12, eve_present=True)
+    output_bits = simulate_communication(sim_inputs=sim_inputs)
+    output_bits = output_bits[sim_inputs.alice_bases == sim_inputs.bob_bases]
+    sim_inputs.discard_data()  # Remove inputs where Alice and Bob don't have the same basis
+    qber.append(
+        bit_error_rate(input_bits=sim_inputs.input_bits, output_bits=output_bits)
+    )
+    print(f"Computed quantum bit error rate in simulation: {np.mean(qber)}")
+
+
 if __name__ == "__main__":
 
-    main()
+    simulate_eve_present()
