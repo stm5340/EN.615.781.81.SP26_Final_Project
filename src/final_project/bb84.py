@@ -13,6 +13,7 @@ rng = np.random.default_rng(SEED)
 BASIS_CHOICES = ["Z", "X"]
 BIT_CHOICES = [0, 1]
 
+
 class BB84(QuantumCircuit):
     """
     Class that implements a BB84 circuit with no eavesdropping using the qiskit library's QuantumCircuit class
@@ -21,8 +22,11 @@ class BB84(QuantumCircuit):
     input_bit: int = None
     alice_basis: str = None
     bob_basis: str = None
+    eve_basis: str = None
 
-    def __init__(self, input_bit: int, alice_basis: str, bob_basis: str):
+    def __init__(
+        self, input_bit: int, alice_basis: str, bob_basis: str, eve_basis: str
+    ):
 
         super().__init__(1, 1, name="BB84")
 
@@ -38,6 +42,38 @@ class BB84(QuantumCircuit):
         else:
             raise ValueError("Alice must choose an input basis of 'Z' or 'X'")
 
+        if eve_basis == "Z":  # Eve chooses to prepare the message in the Z-basis
+            self.id(0)
+        elif eve_basis == "X":  # Eve chooses to prepare the message in the X-basis
+            self.h(0)
+        else:
+            raise ValueError("Eve must choose an input basis of 'Z' or 'X'")
+
+        self.measure(0, 0)  # Eve measures the messages ("intercept")
+
+        cbit = self.clbits[
+            0
+        ]  # Classical bit value of zeroth index qubit post-measurement
+        self.reset(
+            0
+        )  # Reset the zeroth index qubit since Eve has to resend the message
+
+        if cbit == 0:
+            # Eve's basis choice didn't yield a positive measurement
+            # She can't recreate the supposed initial state since she doesn't
+            # have enough information.
+            self.initialize("0")
+        else:
+            # Eve's basis choice yielded a positive measurement
+            self.initialize("1")
+
+        if eve_basis == "Z":  # Eve chooses to resend the message in the Z-basis
+            self.id(0)
+        elif eve_basis == "X":  # Eve chooses to resend the message in the X-basis
+            self.h(0)
+        else:
+            raise ValueError("Eve must choose an input basis of 'Z' or 'X'")
+
         if bob_basis == "Z":  # Bob chooses to measure the message in the Z-basis
             self.id(0)
         elif bob_basis == "X":  # Bob chooses to measure the message in the X-basis
@@ -48,6 +84,7 @@ class BB84(QuantumCircuit):
         self.input_bit = input_bit
         self.alice_basis = alice_basis
         self.bob_basis = bob_basis
+        self.eve_basis = eve_basis
 
         self.measure(0, 0)  # Measure the first register (zeroth index)
 
@@ -61,6 +98,7 @@ class SimulationInputs:
     input_bits: NDArray[np.int64]
     alice_bases: NDArray[np.str_]
     bob_bases: NDArray[np.str_]
+    eve_bases: NDArray[np.str_]
     circuits: List[BB84]
 
     def discard_data(self) -> Tuple[object, object]:
@@ -72,8 +110,10 @@ class SimulationInputs:
         self.input_bits = self.input_bits[mask]
         self.alice_bases = self.alice_bases[mask]
         self.bob_bases = self.bob_bases[mask]
+        self.eve_bases = self.eve_bases[mask]
         self.circuits = list(compress(self.circuits, mask))
         return self, raw
+
 
 def create_simulation_space(n_messages: int) -> SimulationInputs:
     """
@@ -82,14 +122,16 @@ def create_simulation_space(n_messages: int) -> SimulationInputs:
     """
     alice_bases = rng.choice(BASIS_CHOICES, size=n_messages)
     bob_bases = rng.choice(BASIS_CHOICES, size=n_messages)
+    eve_bases = rng.choice(BASIS_CHOICES, size=n_messages)
     input_bits = rng.choice(BIT_CHOICES, size=n_messages)
 
     sim_inputs = SimulationInputs(
         input_bits,
         alice_bases,
         bob_bases,
+        eve_bases,
         [
-            BB84(input_bits[ii], alice_bases[ii], bob_bases[ii])
+            BB84(input_bits[ii], alice_bases[ii], bob_bases[ii], eve_bases[ii])
             for ii in range(n_messages)
         ],
     )
@@ -104,11 +146,13 @@ def simulate_communication(sim_inputs: SimulationInputs) -> NDArray[np.int64]:
     backend = AerSimulator()
     circuits: List[BB84] = sim_inputs.circuits
     num_messages = len(circuits)
-    results: AerJob = backend.run(transpile(circuits, backend), shots=1, memory=True).result()
+    results: AerJob = backend.run(
+        transpile(circuits, backend), shots=1, memory=True
+    ).result()
     ouput_bits = []
     for i in range(num_messages):
         ouput_bits.append(results.get_memory(i)[0])
-    
+
     return np.asarray(ouput_bits, dtype=np.int64)
 
 
@@ -132,7 +176,6 @@ def main() -> None:
     print(f"Computed quantum bit error rate in simulation: {qber}")
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     main()
