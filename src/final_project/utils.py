@@ -58,3 +58,10 @@ def binary_search_parity_error(
             idx = idx[mid:]
 
     return int(idx[0])
+
+
+def binary_entropy(p: float) -> float:
+    """
+    Evaluates the binary entropy function
+    """
+    return (-p * np.log2(p) - (1 - p) * np.log2(1 - p))

@@ -7,7 +7,13 @@ from qiskit import QuantumCircuit, transpile
 from qiskit.circuit import Clbit
 from qiskit_aer import AerSimulator, AerJob
 from itertools import compress
-from utils import bit_error_rate, parity, binary_search_parity_error, chunks
+from utils import (
+    bit_error_rate,
+    parity,
+    binary_search_parity_error,
+    chunks,
+    binary_entropy,
+)
 
 SEED = None  # Overwrite with fixed value for reproducible results
 rng = np.random.default_rng(SEED)
@@ -181,7 +187,7 @@ def cascade_protocol(
     bob_key: NDArray[np.int64],
     chunk_size: int,
     idx_perm=None,
-) -> Tuple[NDArray[np.int64], NDArray[np.int64]]:
+) -> Tuple[NDArray[np.int64], NDArray[np.int64], NDArray[np.int64]]:
     """
     Implementation of Cascade Protocol
     """
@@ -194,7 +200,8 @@ def cascade_protocol(
     bob_perm = bob_key[idx_perm]
 
     idx_err = np.array([], dtype=np.int64)
-    for idx in chunks(np.arange(alice_key.size, dtype=np.int64), chunk_size):
+    idx_blocks = chunks(np.arange(alice_key.size, dtype=np.int64), chunk_size)
+    for idx in idx_blocks:
 
         # Compute parity of sub-set of bits
         alice_parity = parity(alice_perm[idx])
@@ -211,8 +218,10 @@ def cascade_protocol(
     for ii, idx in enumerate(idx_perm):
         bob_corrected[idx] = bob_perm[ii]
 
-    idx_err = idx_perm[idx_err]
-    return bob_corrected, idx_err
+    idx_err = idx_perm[idx_err]  # Indices needing correction
+    eve_information = len(idx_blocks)  # Information gained by Eve
+
+    return bob_corrected, idx_err, eve_information
 
 
 def information_reconciliation(
@@ -221,7 +230,7 @@ def information_reconciliation(
     qber_estimate: float,
     n_passes: int = 4,
     seed: int = None,
-) -> NDArray[np.int64]:
+) -> Tuple[NDArray[np.int64], NDArray[np.int64]]:
     """
     Perform information reconciliation by performing the Cascade protocol
     `n_passes` times
@@ -232,15 +241,35 @@ def information_reconciliation(
 
     # First block-size is inversely proportional to QBER
     block_size = int(1 / qber_estimate)
+    eve_information = 0  # Accumulate additional information gained by Eve
     for _ in range(n_passes):
         perm = np.arange(n)
         rng.shuffle(perm)
 
-        bob_key, _ = cascade_protocol(alice_key, bob_key, block_size, perm)
+        bob_key, _, eve_bits_acc = cascade_protocol(
+            alice_key, bob_key, block_size, perm
+        )
+        eve_information += eve_bits_acc
 
         block_size *= 2  # Increase block size for next iteration
 
-    return bob_key
+    return bob_key, eve_information
+
+def privacy_amplification(
+    reconciled_key: NDArray[np.int64],
+    key_length: int,
+    rng: np.random.Generator = np.random.default_rng(),
+) -> Tuple[NDArray[np.int64], NDArray[np.int64]]:
+    """
+    Privacy amplification using a random binary matrix over GF(2).
+    """
+
+    hash_matrix = rng.integers(
+        0, 2, size=(key_length, reconciled_key.size), dtype=np.int64
+    )
+    final_key = (hash_matrix @ reconciled_key) % 2
+
+    return final_key.astype(np.int64), hash_matrix
 
 
 def simulate_no_eve_present() -> None:
@@ -273,12 +302,16 @@ def simulate_information_reconcilation() -> None:
     estimated_qber = bit_error_rate(
         input_bits=sim_inputs.input_bits[0:1000], output_bits=output_bits[0:1000]
     )  # Estimate QBER using subset of remaining message
-    corrected_output_bits = information_reconciliation(
+    (corrected_output_bits, eve_info) = information_reconciliation(
         alice_key=sim_inputs.input_bits[1000:],
         bob_key=output_bits[1000:],
         qber_estimate=estimated_qber,
-        n_passes=10,
-        seed=10
+        n_passes=5,
+        seed=10,
+    )
+
+    print(
+        f"Information gained by Eve through information reconciliation: {eve_info} \n"
     )
 
     print(f"Estimated QBER: {estimated_qber} \n")
@@ -293,7 +326,6 @@ def simulate_information_reconcilation() -> None:
         input_bits=sim_inputs.input_bits[1000:], output_bits=corrected_output_bits
     )
     print(f"Corrected QBER {corrected_qber} \n")
-
 
 
 if __name__ == "__main__":
