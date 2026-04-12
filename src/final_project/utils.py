@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.typing import NDArray
-from typing import List, Tuple
+from typing import List
 
 
 def bit_error_rate(
@@ -44,7 +44,7 @@ def binary_search_parity_error(
     arr1: NDArray[np.int64], arr2: NDArray[np.int64], idx: NDArray[np.int64]
 ):
     """
-    Performs a binary search on two arrays to locate an odd parity mismatch.
+    Performs a binary search on two arrays to locate a parity mismatch.
     """
 
     while idx.size > 1:

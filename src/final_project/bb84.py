@@ -7,6 +7,7 @@ from qiskit import QuantumCircuit, transpile
 from qiskit.circuit import Clbit
 from qiskit_aer import AerSimulator, AerJob
 from itertools import compress
+from utils import bit_error_rate, parity, binary_search_parity_error, chunks
 
 SEED = None  # Overwrite with fixed value for reproducible results
 rng = np.random.default_rng(SEED)
@@ -175,20 +176,71 @@ def simulate_communication(sim_inputs: SimulationInputs) -> NDArray[np.int64]:
     return np.asarray(ouput_bits, dtype=np.int64)
 
 
-def bit_error_rate(input_bits: NDArray[np.int64], output_bits: NDArray[np.int64]):
+def cascade_protocol(
+    alice_key: NDArray[np.int64],
+    bob_key: NDArray[np.int64],
+    chunk_size: int,
+    idx_perm=None,
+) -> Tuple[NDArray[np.int64], NDArray[np.int64]]:
     """
-    Computes the quantum bit error rate between two sets of bits
+    Implementation of Cascade Protocol
     """
 
-    if np.size(input_bits) != np.size(output_bits):
-        raise ValueError("input_bits and output_bits must be of the same size")
+    if idx_perm is None:
+        idx_perm = np.arange(alice_key.size)
 
-    if np.size(input_bits) == 0:
-        return np.nan
-    else:
-        return np.sum(input_bits.flatten() != output_bits.flatten()) / np.size(
-            input_bits
-        )
+    # Re-organize bits according to input permutation
+    alice_perm = alice_key[idx_perm]
+    bob_perm = bob_key[idx_perm]
+
+    idx_err = np.array([], dtype=np.int64)
+    for idx in chunks(np.arange(alice_key.size, dtype=np.int64), chunk_size):
+
+        # Compute parity of sub-set of bits
+        alice_parity = parity(alice_perm[idx])
+        bob_parity = parity(bob_perm[idx])
+
+        if alice_parity != bob_parity:
+            # Find the error and correct the parity
+            err_loc = binary_search_parity_error(alice_perm, bob_perm, idx)
+            bob_perm[err_loc] ^= 1
+            idx_err = np.append(idx_err, err_loc)
+
+    # Correct Bob's bits
+    bob_corrected = bob_key
+    for ii, idx in enumerate(idx_perm):
+        bob_corrected[idx] = bob_perm[ii]
+
+    idx_err = idx_perm[idx_err]
+    return bob_corrected, idx_err
+
+
+def information_reconciliation(
+    alice_key: NDArray[np.int64],
+    bob_key: NDArray[np.int64],
+    qber_estimate: float,
+    n_passes: int = 4,
+    seed: int = None,
+) -> NDArray[np.int64]:
+    """
+    Perform information reconciliation by performing the Cascade protocol
+    `n_passes` times
+    """
+
+    rng = np.random.default_rng(seed)
+    n = len(alice_key)
+
+    # First block-size is inversely proportional to QBER
+    block_size = int(1 / qber_estimate)
+    for _ in range(n_passes):
+        perm = np.arange(n)
+        rng.shuffle(perm)
+
+        bob_key, _ = cascade_protocol(alice_key, bob_key, block_size, perm)
+
+        block_size *= 2  # Increase block size for next iteration
+
+    return bob_key
 
 
 def simulate_no_eve_present() -> None:
@@ -213,6 +265,36 @@ def simulate_eve_present() -> None:
     print(f"Computed quantum bit error rate in simulation: {np.mean(qber)}")
 
 
-if __name__ == "__main__":
+def simulate_information_reconcilation() -> None:
+    sim_inputs = create_simulation_space(n_messages=2**12, eve_present=True)
+    output_bits = simulate_communication(sim_inputs=sim_inputs)
+    output_bits = output_bits[sim_inputs.alice_bases == sim_inputs.bob_bases]
+    sim_inputs.discard_data()  # Remove inputs where Alice and Bob don't have the same basis
+    estimated_qber = bit_error_rate(
+        input_bits=sim_inputs.input_bits[0:1000], output_bits=output_bits[0:1000]
+    )  # Estimate QBER using subset of remaining message
+    corrected_output_bits = information_reconciliation(
+        alice_key=sim_inputs.input_bits[1000:],
+        bob_key=output_bits[1000:],
+        qber_estimate=estimated_qber,
+        n_passes=10,
+        seed=10
+    )
 
-    simulate_eve_present()
+    print(f"Estimated QBER: {estimated_qber} \n")
+
+    actual_qber = bit_error_rate(
+        input_bits=sim_inputs.input_bits, output_bits=output_bits
+    )
+
+    print(f"Actual QBER: {actual_qber} \n")
+
+    corrected_qber = bit_error_rate(
+        input_bits=sim_inputs.input_bits[1000:], output_bits=corrected_output_bits
+    )
+    print(f"Corrected QBER {corrected_qber} \n")
+
+
+
+if __name__ == "__main__":
+    simulate_information_reconcilation()
