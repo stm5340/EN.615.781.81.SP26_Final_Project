@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.typing import NDArray
-from typing import List
+from typing import List, Tuple
 
 
 def bit_error_rate(
@@ -42,22 +42,24 @@ def chunks(arr: NDArray[np.number], n: np.int64) -> List[NDArray[np.number]]:
 
 def binary_search_parity_error(
     arr1: NDArray[np.int64], arr2: NDArray[np.int64], idx: NDArray[np.int64]
-):
+) -> Tuple[int, int]:
     """
     Performs a binary search on two arrays to locate a parity mismatch.
     """
 
+    leakage = 0
     while idx.size > 1:
         mid = idx.size // 2  # Midpoint index
         left_idx = idx[:mid]  # Left side of array
 
+        leakage += 1
         # Compare parity of blocks
         if parity(arr1[left_idx]) != parity(arr2[left_idx]):
             idx = left_idx
         else:
             idx = idx[mid:]
 
-    return int(idx[0])
+    return int(idx[0]), leakage
 
 
 def binary_entropy(p: float) -> float:
