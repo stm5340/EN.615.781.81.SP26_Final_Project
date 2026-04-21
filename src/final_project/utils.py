@@ -67,3 +67,38 @@ def binary_entropy(p: float) -> float:
     Evaluates the binary entropy function
     """
     return (-p * np.log2(p) - (1 - p) * np.log2(1 - p))
+
+def string_to_bits(string: str):
+    """
+    Converts a string to a bit string
+    """
+    return np.unpackbits(np.frombuffer(string.encode("utf-8"), dtype=np.uint8)).astype(np.int64)
+
+
+def bits_to_string(bits: NDArray[np.int64]) -> str:
+    """
+    Converts a bit string to a character string
+    """
+    return np.packbits(bits).tobytes().decode("utf-8")
+
+
+def encrypt(message: str, key: NDArray[np.int64]) -> NDArray[np.int64]:
+
+    message = string_to_bits(message)
+
+    if len(message) != len(key):
+        raise ValueError("Key length must equal message bit length.")
+
+    return np.bitwise_xor(message, key)
+
+
+def decrypt(message: NDArray[np.int64], key: NDArray[np.int64]) -> str:
+
+    if len(message) != len(key):
+        raise ValueError("Key length must equal message bit length.")
+
+    return bits_to_string(np.bitwise_xor(message, key))
+
+if __name__ == "__main__":
+    print(string_to_bits("HI"))
+

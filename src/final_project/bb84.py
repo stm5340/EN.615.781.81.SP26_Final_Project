@@ -13,6 +13,9 @@ from utils import (
     binary_search_parity_error,
     chunks,
     binary_entropy,
+    string_to_bits,
+    encrypt,
+    decrypt
 )
 
 SEED = None  # Overwrite with fixed value for reproducible results
@@ -273,8 +276,9 @@ def privacy_amplification(
     """
 
     # Key length after privacy amplification
-    key_length = np.floor(
-        len(reconciled_key) * (1 - binary_entropy(qber)) - eve_information
+    BITS_PER_CHARACTER = 8
+    key_length = BITS_PER_CHARACTER * np.floor(
+        (len(reconciled_key) * (1 - binary_entropy(qber)) - eve_information) / BITS_PER_CHARACTER
     )
     if key_length <= 0:
         return None
@@ -282,7 +286,7 @@ def privacy_amplification(
     m = int(key_length)
     n = len(reconciled_key)
 
-    hash_matrix = rng.integers(0, 2, size=(m, n), dtype=np.uint16)
+    hash_matrix = rng.integers(0, 2, size=(m, n), dtype=np.uint8)
 
     return (hash_matrix @ reconciled_key) % 2
 
@@ -341,7 +345,7 @@ def simulate_information_reconcilation() -> None:
 
 def simulate_privacy_amplification() -> None:
     sim_inputs = create_simulation_space(
-        n_messages=2**8, eve_present=np.random.permutation(np.repeat([True, False, False, False], 2**8 // 4))
+        n_messages=2**10, eve_present=np.random.permutation(np.repeat([True, False, False, False], 2**12 // 4))
     )
     output_bits = simulate_communication(sim_inputs=sim_inputs)
     output_bits = output_bits[sim_inputs.alice_bases == sim_inputs.bob_bases]
@@ -351,12 +355,12 @@ def simulate_privacy_amplification() -> None:
     )
     print(f"Actual QBER: {actual_qber}")
     estimated_qber = bit_error_rate(
-        input_bits=sim_inputs.input_bits[0:100], output_bits=output_bits[0:100]
+        input_bits=sim_inputs.input_bits[0:25], output_bits=output_bits[0:25]
     )  # Estimate QBER using subset of remaining message
     print(f"Estimated QBER: {estimated_qber}")
     (reconciled_key, eve_information) = information_reconciliation(
-        alice_key=sim_inputs.input_bits[100:],
-        bob_key=output_bits[100:],
+        alice_key=sim_inputs.input_bits[25:],
+        bob_key=output_bits[25:],
         qber_estimate=estimated_qber,
         n_passes=5,
         seed=10,
@@ -365,7 +369,7 @@ def simulate_privacy_amplification() -> None:
         f"Information gained by Eve through information reconciliation: {eve_information} bits"
     )
     corrected_qber = bit_error_rate(
-        input_bits=sim_inputs.input_bits[100:], output_bits=reconciled_key
+        input_bits=sim_inputs.input_bits[25:], output_bits=reconciled_key
     )
     print(f"Corrected QBER {corrected_qber}")
     rng = np.random.default_rng(42)
@@ -378,9 +382,18 @@ def simulate_privacy_amplification() -> None:
 
     print(f"Final secret key: {"".join(secret_key.astype(str))}")
 
+    MESSAGE = ("Hello World!").ljust(secret_key.size // 8)
+    MESSAGE = encrypt(MESSAGE, secret_key)
+    MESSAGE = decrypt(MESSAGE, secret_key)
+
+    print(f"Transmitted message: {MESSAGE}")
+
 
 if __name__ == "__main__":
     # simulate_no_eve_present()
     # simulate_eve_present()
     # simulate_information_reconcilation()
     simulate_privacy_amplification()
+
+
+
