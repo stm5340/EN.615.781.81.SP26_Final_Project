@@ -6,6 +6,8 @@
 
 # Non-text files
 *.pdf
+*.pkl
+.ipynb_checkpoints
 
 # Other temporary files
 *.swp
