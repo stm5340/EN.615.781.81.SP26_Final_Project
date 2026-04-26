@@ -1,8 +1,18 @@
 \section{BB84 with an Intercept–Resend Eavesdropper} \label{sec:embeddings}
 % Attack Model and Expected Impact
 
-For an insecure communication channel, an eavesdropper (Eve) can employ and intercept and resend attack. In this attack, Eve measures Alice's message before it reaches Bob. Similar to Bob, Eve must guess which basis the the message was sent in, with a theoretical success rate of 50\%. Since the quantum state collapses after measurement, Eve must prepare another state that gets forwarded to Bob to avoid detection. Since there is a 50\% chance Eve measured and re-prepared a state in the right basis, the probability that Bob would choose the same basis as Alice and not yield the correct measurement from the resent message is 50\%. Therefore, the theoretical quantum bit error rate (QBER) is $50\% \times 50\% = 25\%$ for this attacking scheme. Such an error rate is above the BB84's maximum tolerance level of 11\%. % https://arxiv.org/abs/quant-ph/0003004
+For an insecure communication channel, an eavesdropper (Eve) can employ and intercept and resend attack. In this attack, Eve measures Alice's message before it reaches Bob. Similar to Bob, Eve must guess which basis the the message was sent in, with a theoretical success rate of 50\%. Since the quantum state collapses after measurement, Eve must prepare another state that gets forwarded to Bob to avoid detection. Since there is a 50\% chance Eve measured and re-prepared a state in the right basis, the probability that Bob would choose the same basis as Alice and not yield the correct measurement from the resent message is 50\%. Therefore, the theoretical quantum bit error rate (QBER) is $50\% \times 50\% = 25\%$ for this attacking scheme. Such an error rate is above the BB84's maximum tolerance level of 11\%. \cite{Shor_2000} Thus, to avoid detection, Eve would have to lower the frequency at which the incoming message is intercepted.
 
-
-Circuit Implementation: Alice - Eve; Eve - Bob
-
+% Circuit Implementation: Alice - Eve; Eve - Bob
+\ref{fig:intercept-resend} shows an implementation of the BB84 protocol as a quantum circuit including an eavesdropper using an intercept-and-resend attack scheme. The circuit starts with a quantum state in the Z-basis ($\left\{\ket{0}, \ket{1}\right\}$), that is then acted upon by an identity gate if Alice chooses to transmit in the z-basis, or is acted upon by a Pauli X gate if Alice chooses to transmit in the x-basis. Eve's performs a readout measurement, then translates the classical bit into a quantum state that is modified by an identity gate or Pauli X gate depending on the desired basis. Bob then performs a readout measurement of Eve's message.
+\begin{figure}[ht]
+\centering
+\[
+\Qcircuit {
+\lstick{\text{Alice}} & \lstick{\ket{0/1}} & \gate{I/X} & \meter & \cw & \rstick{\text{Eve measures}} \\
+\lstick{\text{Eve}} & \lstick{\ket{0/1}} & \gate{I/X} & \meter & \cw & \rstick{\text{Bob measures}}
+}
+\]
+\caption{Intercept-and-resend attack}
+\label{fig:intercept-resend}
+\end{figure}
