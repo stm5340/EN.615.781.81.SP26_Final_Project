@@ -1,5 +1,7 @@
 \section{Baseline BB84 Experiments} \label{sec:graph}
-Ideal, Noise-Free BB84
+% Ideal, Noise-Free BB84
+The BB84 protocol starts with the sender (Alice) encoding bits in a quantum state (qubits) and transmitting them over a (necessarily insecure) quantum channel. As described above, a physical realization of this is using vertical-horizontal or circular polarizations as a choice of basis each of which each have two orthogonal states in that basis. The receiver (Bob) must choose which basis to measure the incoming qubits without any knowledge of Alice's choice of basis. Bob has a 50\% chance of picking the correct basis, assuming the information is transmitted over a noiseless channel. After every message is sent, Alice and Bob publicly compare their choice of basis chosen for each message, and retain the bits where they both chose the same basis. If the public channel were secure and noiseless, then Alice and Bob would have a shared secret key that can be used for one-time pad encryption.
+
 
 BB84 on IBM Hardware
 
