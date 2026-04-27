@@ -1,0 +1,20 @@
+% study_approach.tex
+\section{Study Approach} \label{sec:study-approach}
+
+In this section we describe the methodological framework used to study the BB84 quantum key distribution protocol. Our implementation is organized in several logical blocks: (i) the simulation framework and backends, (ii) baseline BB84 state preparation, measurement, and sifting on simulators and hardware, (iii) an intercept--resend eavesdropper model, and (iv) classical post--processing, including information reconciliation and privacy amplification. For clarity and modularity, each of these blocks is implemented in a separate \LaTeX{} file and included below.
+
+% \subsection{Simulation Framework and Backends}
+\label{subsec:study-framework}
+\input{Simulation-Framework}
+
+% \subsection{Baseline BB84 Preparation, Measurement, and Sifting}
+\label{subsec:study-baseline-bb84}
+\input{Baseline-BB84-Experiments}
+
+% \subsection{Intercept--Resend Eavesdropper Model}
+\label{subsec:study-eavesdropper}
+\input{BB84-Intercept–Resend-Eavesdropper}
+
+% \subsection{Information Reconciliation and Privacy Amplification}
+\label{subsec:study-postprocessing}
+\input{Error-Correction-Privacy-Amplification}
