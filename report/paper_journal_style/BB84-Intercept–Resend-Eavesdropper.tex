@@ -1,4 +1,4 @@
-\section{BB84 with an Intercept–Resend Eavesdropper} \label{sec:embeddings}
+\subsection{BB84 with an Intercept–Resend Eavesdropper} \label{sec:embeddings}
 % Attack Model and Expected Impact
 
 For an insecure communication channel, an eavesdropper (Eve) can employ and intercept and resend attack. In this attack, Eve measures Alice's message before it reaches Bob. Similar to Bob, Eve must guess which basis the the message was sent in, with a theoretical success rate of 50\%. Since the quantum state collapses after measurement, Eve must prepare another state that gets forwarded to Bob to avoid detection. Since there is a 50\% chance Eve measured and re-prepared a state in the right basis, the probability that Bob would choose the same basis as Alice and not yield the correct measurement from the resent message is 50\%. Therefore, the theoretical quantum bit error rate (QBER) is $50\% \times 50\% = 25\%$ for this attacking scheme. Such an error rate is above the BB84's maximum tolerance level of 11\%. \cite{Shor_2000} Thus, to avoid detection, Eve would have to lower the frequency at which the incoming message is intercepted.
