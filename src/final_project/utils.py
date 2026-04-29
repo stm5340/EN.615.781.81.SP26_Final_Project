@@ -68,6 +68,15 @@ def binary_entropy(p: float) -> float:
     """
     return (-p * np.log2(p) - (1 - p) * np.log2(1 - p))
 
+
+
+def collision_entropy(p: NDArray[np.float64]):
+    """
+    Compute collision entropy H2(p) = -log2(sum_i p_i^2).
+    """
+
+    return -np.log2(np.sum(p**2))
+
 def string_to_bits(string: str):
     """
     Converts a string to a bit string

@@ -1,6 +1,30 @@
 \subsection{Classical Post-Processing} \label{sec:downstream}
 % Classical Error Correction
-The QBER can be reduced by classical post-processing step known as information reconciliation, which is an error-correction code performed over the communication channel. It's critical that Bob and Alice perform this correction without leaking too much information to Eve, otherwise the resulting key won't be a secret. There are numerous processes that can be used to find the location of a bit error while minimizing information leakage. One such process is the Cascade protocol. In this protocol, Alice and Bob partition their key strings into blocks of equal size (the block size is inversely proportional to the QBER) and publicly compare the parity of each block. If a block has different parity, then Bob (and Eve) knows that at least one bit flip occurred in his block. Bob and Alice can then perform a binary search on the block by comparing the parity of sub-blocks until a single bit flip is isolated. After an initial passthrough, Alice and Bob permute their key string and repeat the process using a different block size. By doing so, new parity errors in the permuted blocks can be identified, lowering the bit error rate further. Note that this process avoids publicly comparing each bit in the key over the communication channel, otherwise Eve would have knowledge of the entire key. % https://link.springer.com/chapter/10.1007/3-540-48285-7_35
+The QBER can be reduced by classical post-processing step known as information reconciliation, which is an error-correction algorithm performed over the communication channel. It's critical that Bob and Alice perform this correction without leaking too much information to Eve, otherwise the resulting key won't be a secret. There are numerous processes that can be used to find the location of a bit error while minimizing information leakage. One such process is the Cascade protocol. In this protocol, Alice and Bob partition their key strings into blocks of equal size (the block size is inversely proportional to the QBER) and publicly compare the parity of each block. If a block has different parity, then Bob (and Eve) knows that at least one bit flip occurred in his block. Bob and Alice can then perform a binary search on the block by comparing the parity of sub-blocks until a single bit flip is isolated. After an initial passthrough, Alice and Bob permute their key string and repeat the process using a different block size. By doing so, new parity errors in the permuted blocks can be identified, lowering the bit error rate further. Note that this process avoids publicly comparing each bit in the key over the communication channel, otherwise Eve would have knowledge of the entire key.
 
-Privacy Amplification
+% Privacy Amplification
+\cite{nielsen2010quantum} provides an information-theoretic justification for privacy amplification. After information reconciliation, Alice and Bob have resolved discrepancies between their respective bit strings creating a shared key, but Eve may have non-negligible information about the  key that poses a security risk. Eve's uncertainty about the key is modeled using entropy, more specifically the collision entropy:
+\begin{equation*}
+    H_c(X) = -\log(\sum_x p(x)^2)
+\end{equation*}
+
+The objective of privacy amplification is to maximize Eve's entropy. Suppose that Alice and Bob randomly select a hash function, $G$, from a family of hash functions, and apply it so their respective bit string, $W$, to yield the $m$-bit compressed key $G(W) \equiv S$. Given that Eve's known information about the bit string prior to compression is $Z$, Eve's collision entropy after compression is bounded by:
+\begin{equation*}
+    H_c(S|G,Z) \ge m - 2^{m-d} \; \text{where} \; H_c(W|Z) > d
+\end{equation*}
+
+Now, suppose that $k$ bits are revealed to Eve via information reconciliation, giving additional knowledge $U$, in addition to the knowledge gained from eavesdropping prior to the information reconciliation process, $Z$. Then, Eve's collision entropy of the shared key prior to privacy amplification $W$ is bounded by:
+\begin{equation*}
+    H_c(W|Z,U) \ge d - 2 k 
+\end{equation*}
+
+Assuming Eve knows the selected hash function for privacy amplification, $G$, and has additional knowledge $Z$ and $U$ about the reconciliated bit string, $W$, applying the randomly selected hash function to the reconciliated bit string leads to the collision entropy of the shared key $S$ being bounded by:
+\begin{equation*}
+    H_c(S|G,Z,U) \ge m - 2^{m - (d - 2k)}
+\end{equation*}
+
+Therefore, to yield a information-theoretic secure key, privacy amplification should yield a $m$-bit key that satisfies the inequality:
+\begin{equation*}
+    m < d - 2 k < H_c(W|Z) - 2 k
+\end{equation*}
 
