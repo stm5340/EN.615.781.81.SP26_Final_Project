@@ -12,8 +12,7 @@ from utils import (
     parity,
     binary_search_parity_error,
     chunks,
-    binary_entropy,
-    string_to_bits,
+    collision_entropy,
     encrypt,
     decrypt
 )
@@ -278,7 +277,7 @@ def privacy_amplification(
     # Key length after privacy amplification
     BITS_PER_CHARACTER = 8
     key_length = BITS_PER_CHARACTER * np.floor(
-        (len(reconciled_key) * (1 - binary_entropy(qber)) - eve_information) / BITS_PER_CHARACTER
+        (len(reconciled_key) * collision_entropy(np.array([0.5 + qber, 0.5 - qber])) - eve_information) / BITS_PER_CHARACTER
     )
     if key_length <= 0:
         return None
