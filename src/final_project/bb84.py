@@ -268,6 +268,7 @@ def privacy_amplification(
     reconciled_key: NDArray[np.int64],
     eve_information: int,
     qber: float,
+    security_margin: int,
     rng: np.random.Generator = np.random.default_rng(),
 ) -> NDArray[np.int64]:
     """
@@ -277,7 +278,7 @@ def privacy_amplification(
     # Key length after privacy amplification
     BITS_PER_CHARACTER = 8
     key_length = BITS_PER_CHARACTER * np.floor(
-        (len(reconciled_key) * collision_entropy(np.array([0.5 + qber, 0.5 - qber])) - eve_information) / BITS_PER_CHARACTER
+        (len(reconciled_key) * collision_entropy(np.array([0.5 + qber, 0.5 - qber])) - 2 * eve_information - security_margin) / BITS_PER_CHARACTER
     )
     if key_length <= 0:
         return None
@@ -326,6 +327,11 @@ def simulate_information_reconcilation() -> None:
         input_bits=sim_inputs.input_bits[0:1000], output_bits=output_bits[0:1000]
     )  # Estimate QBER using subset of remaining message
     print(f"Estimated QBER: {estimated_qber}")
+
+    if estimated_qber == 0:
+        print("Didn't detect any bit errors from sample. Avoid erroring out")
+        return None
+
     (reconciled_key, eve_information) = information_reconciliation(
         alice_key=sim_inputs.input_bits[1000:],
         bob_key=output_bits[1000:],
@@ -357,6 +363,11 @@ def simulate_privacy_amplification() -> None:
         input_bits=sim_inputs.input_bits[0:25], output_bits=output_bits[0:25]
     )  # Estimate QBER using subset of remaining message
     print(f"Estimated QBER: {estimated_qber}")
+
+    if estimated_qber == 0:
+        print("Didn't detect any bit errors from sample. Avoid erroring out")
+        return None
+
     (reconciled_key, eve_information) = information_reconciliation(
         alice_key=sim_inputs.input_bits[25:],
         bob_key=output_bits[25:],
@@ -376,16 +387,20 @@ def simulate_privacy_amplification() -> None:
         reconciled_key=reconciled_key,
         eve_information=eve_information,
         qber=estimated_qber,
+        security_margin=128,
         rng=rng,
     )
 
-    print(f"Final secret key: {"".join(secret_key.astype(str))}")
+    if secret_key is not None:
+        print(f"Final secret key: {"".join(secret_key.astype(str))}")
 
-    MESSAGE = ("Hello World!").ljust(secret_key.size // 8)
-    MESSAGE = encrypt(MESSAGE, secret_key)
-    MESSAGE = decrypt(MESSAGE, secret_key)
+        MESSAGE = ("Hello World!").ljust(secret_key.size // 8)
+        MESSAGE = encrypt(MESSAGE, secret_key)
+        MESSAGE = decrypt(MESSAGE, secret_key)
 
-    print(f"Transmitted message: {MESSAGE}")
+        print(f"Transmitted message: {MESSAGE}")
+    else:
+        print("Aborted process. No secret key produced.")
 
 
 if __name__ == "__main__":
