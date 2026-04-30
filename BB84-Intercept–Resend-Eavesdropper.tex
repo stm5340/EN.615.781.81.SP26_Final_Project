@@ -1,0 +1,31 @@
+\subsection{BB84 with an Intercept–Resend Eavesdropper} \label{sec:embeddings}
+% Attack Model and Expected Impact
+
+In this section, we describe the security of the BB84 QKD protocol, assuming that Eve executes an intercept-resend attack. In this setting, Eve can listen to the classical communication between Alice and Bob but cannot modify the exchanged information. However, she can intercept the qubits sent by Alice, measure them using her chosen bases, and forward the resulting states to Bob. We then briefly describe our simulations of the BB84 QKD protocol in three different scenarios.
+ 
+The security of the protocol conceptually relies on the no-cloning theorem, which prohibits the perfect duplication of unknown quantum states. To see why this matters, suppose cloning were possible. Eve could copy each of Alice’s transmitted qubits, store these copies in quantum memory, and send identical states to Bob. By observing the public discussion phase, she would learn when Alice’s and Bob’s bases coincide, allowing her to measure her stored qubits in the correct bases and recover the sifted key without introducing detectable errors. The impossibility of cloning ensures that any such interception necessarily disturbs the quantum states, thereby revealing Eve’s presence through an increased quantum bit error rate (QBER). In principle, this is how Alice and Bob can detect eavesdropping.
+
+To obtain a quantitative measure of eavesdropping, the security of BB84 also relies on the fact that non-orthogonal quantum states cannot be perfectly distinguished. When Eve intercepts and measures Alice’s qubits, her action is effectively analogous to Bob’s measurement process. Because the encoding uses non-orthogonal states, Eve’s randomly chosen basis matches Alice’s only about 50\% of the time. In the remaining cases, her measurements yield incorrect or incompatible results. When she forwards these collapsed states to Bob, his measurements agree with Eve’s only about 50\% of the time on average. As a result of this compounded mismatch, Alice’s and Bob’s sifted keys coincide only about 25\% of the time, compared to 50\% in the ideal case. Therefore, if Eve intercepts and resends all of Alice’s qubits, the QBER can reach up to 25\% in the absence of noise, and it increases further as noise is introduced. This threshold of 25\% could be used as an upper bound for eavesdropping detection.
+
+What happens if Eve intercepts only a fraction of Alice’s qubits? In this scenario, determining a detection threshold becomes more subtle. In ~\cite{Shor_2000}, Peter Shor and John Preskill analyzed the security of BB84 and derived a conservative bound for detecting eavesdropping. Using information-theoretic arguments, they established an acceptance threshold of approximately 11\% for the QBER. Below this threshold, it is generally impossible to securely generate shared keys and perform error correction. To compute this 11\% threshold, Shor and Preskill defined the security key rate $R(Q)$ as $R(Q)=1-2H(Q)$, as a function of the qubit error $Q$, set $R=0$, and solved for $Q$. Here, $H(Q)$ is the binary Shannon entropy of $Q$.
+
+It is important to note that this result is obtained under asymptotic assumptions, where the key length is taken to be arbitrarily large for analytical tractability. By contrast, modern information-theoretic analyses of QKD security relax these assumptions and instead consider the finite-key regime, which leads to new thresholds that can tolerate higher levels of QBER. A detailed account of these analyses can be found in ~\cite{wolf2021qkd}.
+
+In our simulations of the intercept-and-resend attack, we execute the helper function eavesdropper\_experiment five times and compute the average QBER. Our simulations comprise three scenarios: (1) noiseless simulation; (2) local simulation with noise; (3) simulation on IBM hardware, which is inherently noisy. We will observe the empirical values of QBER in each case and compares it with the upper 25\% threshold discussed above. 
+
+
+% Circuit Implementation: Alice - Eve; Eve - Bob
+Figure \ref{fig:intercept-resend} below conceptually shows an implementation of the BB84 protocol as a quantum circuit including an eavesdropper using an intercept-and-resend attack scheme. The circuit starts with a quantum state in the Z-basis ($\left\{\ket{0}, \ket{1}\right\}$), that is then acted upon by an identity gate if Alice chooses to transmit in the z-basis, or is acted upon by a Pauli X gate if Alice chooses to transmit in the x-basis. Eve's performs a readout measurement, then translates the classical bit into a quantum state that is modified by an identity gate or Pauli X gate depending on the desired basis. Bob then performs a readout measurement of Eve's message.
+\begin{figure}[ht]
+\centering
+\[
+\Qcircuit {
+\lstick{\text{Alice}} & \lstick{\ket{0/1}} & \gate{I/X} & \meter & \cw & \rstick{\text{Eve measures}} \\
+\lstick{\text{Eve}} & \lstick{\ket{0/1}} & \gate{I/X} & \meter & \cw & \rstick{\text{Bob measures}}
+}
+\]
+\caption{Intercept-and-resend attack}
+\label{fig:intercept-resend}
+\end{figure}
+
+
