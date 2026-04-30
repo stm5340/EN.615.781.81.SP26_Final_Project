@@ -1,4 +1,29 @@
-\subsection{Simulation Framework} \label{sec:architecture}
-Qiskit Setup and Backends
 
-Core Helper Functions
+\subsection{Simulation Framework} \label{sec:architecture}
+
+We assume that Alice and Bob have already established an authenticated classical communication channel. The BB84 quantum key distribution (QKD) protocol consists of a quantum preparation–measurement phase followed by a classical post-processing phase. In this subsection, we describe how a Qiskit program is constructed to simulate the first phase, combining Alice’s qubit preparation and Bob’s measurements of the transmitted qubits within a single quantum circuit. Eve’s eavesdropping is also incorporated into this circuit.
+
+Our Qiskit program is executed in a hybrid environment: locally and on IBM’s quantum platforms. To run the circuit on IBM hardware, we installed IBM Qiskit Runtime, created an IBM Cloud account, and obtained an access token for the simulation. IBM provides limited free access to its quantum processing units (QPUs), with a cap of 10 minutes of execution time per month on devices with over 100 qubits. Given these resource constraints, we restrict our implementation of BB84 QKD to 20 qubits for Alice.
+
+While our implementation follows IBM’s BB84 QKD framework, we have refactored the code into modular helper functions to improve clarity and reusability. The core components are outlined below:
+
+(a) To support pseudorandom number generation for Alice, Bob, and Eve (used for randomly selecting measurement bases and for Alice’s bit-string generation) we define two helper functions: get\_rn\_generator and sample\_bits. The former allows the use of a random seed for reproducibility; if the seed is set to None, the results vary across runs. The latter uses this generator to produce random bit strings.
+
+(b) To implement Alice’s encoding, we define the helper function encode\_bb84\_states, which specifies how Alice prepares her qubits based on her randomly generated bit string and randomly chosen bases. Figure XX illustrates this publicly known encoding scheme.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{Figures/encoding.jpg}}
+\caption{Bit-to-Qbit Encoding Based on Basis}
+\label{figencoding}
+\end{figure}
+
+(c) To implement Bob’s measurements of Alice’s qubits, we define two helper functions: measure\_bb84 and counts\_to\_bbits. The first models Bob’s measurement outcomes based on his randomly chosen bases, while the second converts these outcomes into classical bits according to the encoding scheme.
+
+(d) To construct Alice and Bob's sifted keys, we define the helper function sift\_key, which compares their basis choices and retains only the bits for which the bases coincide. In practice, Alice and Bob exchange their basis choices over the authenticated classical channel; this exchange is not explicitly simulated here.
+
+(e) To compute the quantum bit error rate (QBER), we define the helper function key\_statistics, which compares Alice’s and Bob’s sifted keys and calculates the fraction of differing bits. In the ideal case without noise, QBER should be zero.
+
+(f) To simulate the BB84 QKD protocol in the absence of an eavesdropper, we define the helper function simulate\_BB84. This function accepts a noise model as input, allowing execution either locally or on an IBM quantum platform.
+
+(g) To simulate Eve’s intercept-and-resend attack, we define the helper function eavesdropper\_experiment. In this routine, Eve intercepts each qubit sent by Alice, measures it using a randomly chosen basis, records the outcome, and forwards the resulting state to Bob.
+

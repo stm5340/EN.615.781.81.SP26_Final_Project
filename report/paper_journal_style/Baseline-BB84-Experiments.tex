@@ -18,7 +18,11 @@ The BB84 protocol starts with the sender (Alice) encoding bits in a quantum stat
 \end{figure}
 
 
-BB84 on IBM Hardware
+We implement three baseline scenarios of increasing complexity.
+Our first baseline corresponds to the ideal case, in which neither noise nor eavesdropping is present in the quantum channel between Alice and Bob. In this setting, Alice’s state preparation, the quantum channel, and Bob’s measurements are assumed to be perfectly noiseless and free from external interference. This case is implemented only in local simulation, as current IBM quantum hardware is not fully fault-tolerant. Under these assumptions, Alice’s and Bob’s sifted keys are expected to be identical; equivalently, the quantum bit error rate (QBER) should be zero.
 
-BB84 under Synthetic Noise
+The second baseline is also a local simulation without Eve’s presence, but incorporates synthetic noise into the circuit via the simulate\_BB84 helper function. Specifically, we use a single-qubit depolarizing noise model with error probability 0.05. This model captures the effect of noise on Alice’s state preparation and Bob’s measurements, both of which involve single-qubit operations.
+
+The final baseline executes the BB84 simulation on IBM’s quantum platforms. Since the specific backend is assigned automatically, we do not control which device is used. The goal in this case is to assess the level of noise in real hardware by comparing its performance against the ideal baseline.
+
 
