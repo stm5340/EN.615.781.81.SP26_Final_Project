@@ -400,7 +400,7 @@ def simulate_privacy_amplification() -> None:
 
         print(f"Transmitted message: {MESSAGE}")
     else:
-        print("Aborted process. No secret key produced.")
+        print("Aborted privacy amplification because no key that satisfies the security margin could be produced")
 
 
 if __name__ == "__main__":
