@@ -2,9 +2,11 @@
 
 \subsection{Simulation of the Quantum Component}
 
-In this section, we will show the results of simulation of the quantum component of the BB84 QKD protocol in increasing complexity. 
+This section presents simulation results of the BB84 quantum component with increasing levels of complexity.
 
-\subsubsection{Noiseless and Without Eavesdropping}
+\subsubsection{Local Simulation: Noiseless and without Eavesdropping}
+
+The BB84 QKD simulation is executed locally five times using 20 qubits. The outputs presented below correspond to one representative run.
 
 \noindent
 \resizebox{\columnwidth}{!}{%
@@ -17,6 +19,53 @@ $\begin{array}{l l}
 \textbf{Bob's Sifted Key}    & 1, 0, 1, 0, 0, 0, 1, 1, 1 \\
 \end{array}$%
 }
+
+Since Alice and Bob's sifted keys are identical, the qubit error rate (QBER) is zero in this ideal scenario.
+
+\subsubsection{Local Simulation: Noisy but without Eavesdropping}
+
+We add depolarizing noise to the circuit that simulates Alice's preparations and Bob's measurements.
+Again, we run this simulation five times and observe the QBER. The outputs presented below correspond to one representative run.
+
+\noindent
+\resizebox{\columnwidth}{!}{%
+$\begin{array}{l l}
+\textbf{Alice's Bits:}       & 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1 \\
+\textbf{Alice's Bases:}      & Z, X, Z, Z, Z, X, X, Z, Z, X, Z, X, Z, X, X, Z, X, X, Z, X \\
+\textbf{Bob's Bases:}        & X, Z, Z, Z, Z, Z, Z, X, Z, Z, Z, Z, Z, Z, Z, X, Z, X, Z, X \\
+\textbf{Bob's Bits:}         & 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1 \\
+\textbf{Alice's Sifted Key}  & 1, 0, 1, 0, 0, 0, 1, 1, 1 \\
+\textbf{Bob's Sifted Key}    & 1, 1, 1, 0, 0, 0, 1, 0, 1 \\
+\end{array}$%
+}
+
+Since Alice and Bob's sifted keys differ in two bits out of nine, the QBER is now 2/9, which is approximately 22\%. 
+Hence, adding noise results in an increase in QBER.
+
+\subsubsection{IBM Hardware Simulation: Noisy but without Eavesdropping}
+
+This simulation was run on an IBM Quantum Platform repeatedly 10 times. The outputs presented below correspond to one representative run.
+
+\noindent
+\resizebox{\columnwidth}{!}{%
+$\begin{array}{l l}
+\textbf{Alice's Bits:}       & 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1 \\
+\textbf{Alice's Bases:}      & Z, X, Z, Z, Z, X, X, Z, Z, X, Z, X, Z, X, X, Z, X, X, Z, X \\
+\textbf{Bob's Bases:}        & X, Z, Z, Z, Z, Z, Z, X, Z, Z, Z, Z, Z, Z, Z, X, Z, X, Z, X \\
+\textbf{Bob's Bits:}         & 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1 \\
+\textbf{Alice's Sifted Key}  & 1, 0, 1, 0, 0, 0, 1, 1, 1 \\
+\textbf{Bob's Sifted Key}    & 0, 0, 1, 0, 0, 0, 1, 1, 1 \\
+\end{array}$%
+}
+
+Alice and Bob's sifted keys differ in one bit, which amounts to a QBER of approximately 11\%. 
+It turns out that the QBER is zero in the remaining nine runs. From this observation, we can conclude 
+that this IBM machine is almost noiseless for simple processing tasks like quantum state preparation and measurement where decoherence is minimal.
+
+\subsubsection{Local Simulation: Eavesdropping but Noiseless}
+
+
+
 
 \subsection{Simulation of the Classical Post-Processing Component}
 
