@@ -64,8 +64,69 @@ that this IBM machine is almost noiseless for simple processing tasks like quant
 
 \subsubsection{Local Simulation: Eavesdropping but Noiseless}
 
+We now show how Eve's intercept-resend attack can result in a much higher QBER. Here, we run the simulation locally five times. 
+Below are the outputs corresponding to one representative run.
+
+\noindent
+\resizebox{\columnwidth}{!}{%
+$\begin{array}{l l}
+\textbf{Alice's Bits:}       & 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1 \\
+\textbf{Alice's Bases:}      & Z, X, Z, Z, Z, X, X, Z, Z, X, Z, X, Z, X, X, Z, X, X, Z, X \\
+\textbf{Eve's Bases:}        & X, Z, Z, Z, Z, Z, Z, X, Z, Z, Z, Z, Z, Z, Z, X, Z, X, Z, X \\
+\textbf{Eve's Bits:}         & 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1 \\
+\textbf{Bob's Bases:}        & X, X, X, X, Z, Z, Z, X, Z, X, X, Z, Z, X, Z, X, X, Z, X, X \\
+\textbf{Bob's Bits:}         & 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1 \\
+\textbf{Alice's Sifted Key}  & 1, 1, 0, 0, 0, 1, 1, 1\\
+\textbf{Bob's Sifted Key}    & 0, 1, 0, 0, 0, 0, 1, 1 \\
+\end{array}$%
+}
+
+The QBER rises to 25\%, which coincides with the error rate discussed in section II.C. In addition, the average QBER over all five runs is approximately 25\%.
+
+\subsubsection{Local Simulation: Eavesdropping with Noise}
+
+In this experiment, we repeat the above simulation with depolarizing noise to examine the effect of noise on QBER. In the noiseless case above, the QBER is 25\%.
+Below are the outputs corresponding to one representative run.
+
+\noindent
+\resizebox{\columnwidth}{!}{%
+$\begin{array}{l l}
+\textbf{Alice's Bits:}       & 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1 \\
+\textbf{Alice's Bases:}      & Z, X, Z, Z, Z, X, X, Z, Z, X, Z, X, Z, X, X, Z, X, X, Z, X \\
+\textbf{Eve's Bases:}        & X, Z, Z, Z, Z, Z, Z, X, Z, Z, Z, Z, Z, Z, Z, X, Z, X, Z, X \\
+\textbf{Eve's Bits:}         & 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0 \\
+\textbf{Bob's Bases:}        & X, X, X, X, Z, Z, Z, X, Z, X, X, Z, Z, X, Z, X, X, Z, X, X \\
+\textbf{Bob's Bits:}         & 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0 \\
+\textbf{Alice's Sifted Key}  & 1, 1, 0, 0, 0, 1, 1, 1 \\
+\textbf{Bob's Sifted Key}    & 0, 1, 1, 0, 0, 1, 1, 0 \\
+\end{array}$%
+}
+
+The QBER for this run is 37.5\%. The average QBER over five runs is approximately 35\%, 
+which is higher than the corresponding value in the noiseless case, as expected. 
+This confirms that the effect of noise is consistent with our observations.
 
 
+\subsubsection{IBM Hardware Simulation: Eavesdropping with Noise}
+
+Finally, we simulate the intercept-resend attack by executing the BB84 protocol five times on IBM Quantum Platform.
+As seen above, the IBM hardware is slightly noisy. Below are the outputs corresponding to one representative run.
+
+\noindent
+\resizebox{\columnwidth}{!}{%
+$\begin{array}{l l}
+\textbf{Alice's Bits:}       & 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1 \\
+\textbf{Alice's Bases:}      & Z, X, Z, Z, Z, X, X, Z, Z, X, Z, X, Z, X, X, Z, X, X, Z, X \\
+\textbf{Eve's Bases:}        & X, Z, Z, Z, Z, Z, Z, X, Z, Z, Z, Z, Z, Z, Z, X, Z, X, Z, Z \\
+\textbf{Eve's Bits:}         & 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1 \\
+\textbf{Bob's Bases:}        & X, X, X, X, Z, Z, Z, X, Z, X, X, Z, Z, X, Z, X, X, Z, X, X \\
+\textbf{Bob's Bits:}         & 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1 \\
+\textbf{Alice's Sifted Key}  & 1, 1, 0, 0, 0, 1, 1, 1 \\
+\textbf{Bob's Sifted Key}    & 1, 1, 0, 1, 0, 0, 0, 1 \\
+\end{array}$%
+}
+
+As in the preceding local simulation case, the QBER for this run is 37.5\%, while the average over all five runs is 27.5\%.
 
 \subsection{Simulation of the Classical Post-Processing Component}
 
