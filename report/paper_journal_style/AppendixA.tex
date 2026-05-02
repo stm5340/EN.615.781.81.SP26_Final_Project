@@ -1,4 +1,8 @@
 % AppendixA.tex
 \section{Core Protocol Implementation Details}\label{app:protocol-details}
 
-The implementation of all work described above is available in the included Jiupyter Notebook
+The implementation of all work described above is available in the included Jupyter Notebook.
+
+For local simulation, we use the state vector simulator method in the AerSimulator. The same backend type was used for adding a noise model with depolarization and measurement noise. To run circuits on IBM hardware, the IBM Qiskit Runtime python package and an IBM Cloud account are required. The default configurations were used to select the precise machinery. IBM provides limited free access to its quantum processing units (QPUs), with a cap of 10 minutes of execution time per month on devices with over 100 qubits. Given these resource constraints, we restrict our implementation of BB84 QKD to 20 qubits for Alice.
+
+For reproducibility purposes, the ``random'' selections of bases and bit-strings were generated pseudorandomly using a constant seed. If the seed is set to None, then results will vary from run to run. The same pseudorandom generation approach is used for all selections of state preparation basis, bit-string values, and measurement basis.
