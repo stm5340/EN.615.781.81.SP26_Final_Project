@@ -19,7 +19,7 @@ Figure \ref{fig:ideal} below shows an implementation of the BB84 protocol as a q
 
 
 We implement three baseline scenarios of increasing complexity.
-Our first baseline corresponds to the ideal case, in which neither noise nor eavesdropping is present in the quantum channel between Alice and Bob. In this setting, Alice’s state preparation, the quantum channel, and Bob’s measurements are assumed to be perfectly noiseless and free from external interference. This case is implemented only in local simulation, as current IBM quantum hardware is not fully fault-tolerant. Under these assumptions, Alice’s and Bob’s sifted keys are expected to be identical; equivalently, the quantum bit error rate (QBER) should be zero.
+Our first baseline corresponds to the ideal case, in which neither noise nor eavesdropping is present in the quantum channel. In this setting, Alice’s state preparation, the quantum channel, and Bob’s measurements are noiseless and free from Eve's interference. This case is implemented only in local simulation, as IBM hardware is not fully fault-tolerant yet. Under these assumptions, Alice and Bob’s sifted keys should be identical; equivalently, QBER$ = 0$.
 
 The second baseline is also a local simulation without Eve’s presence, but incorporates synthetic noise into the circuit via the simulate\_BB84 helper function. Specifically, we use a single-qubit depolarizing noise model with error probability 0.05. This model captures the effect of noise on Alice’s state preparation and Bob’s measurements, both of which involve single-qubit operations.
 

@@ -20,13 +20,12 @@ $\begin{array}{l l}
 \end{array}$%
 }
 
-Since Alice and Bob's sifted keys are identical, the qubit error rate (QBER) is zero in this ideal scenario. 
-Hence, based on the typical ~11\% security threshold in BB84, as discussed in Section II.C, Alice and Bob would proceed to the error-correcting step.
+Since Alice and Bob's sifted keys are identical, QBER $= 0$. 
 
 \subsubsection{Local Simulation: Noisy but without Eavesdropping}
 
 We add depolarizing noise to the circuit that simulates Alice's preparations and Bob's measurements.
-Again, we run this simulation five times and observe the QBER. The outputs presented below correspond to one representative run.
+We run this simulation five times and observe the QBER. The outputs presented below are for one representative run.
 
 \noindent
 \resizebox{\columnwidth}{!}{%
@@ -60,8 +59,7 @@ $\begin{array}{l l}
 }
 
 Alice and Bob's sifted keys differ in one bit, which amounts to a QBER of approximately 11\%. 
-It turns out that the QBER is zero in the remaining nine runs. From this observation, we can conclude 
-that this IBM machine is almost noiseless for simple processing tasks like quantum state preparation and measurement where decoherence is minimal.
+However, QBER $= 0$ in the remaining nine runs. Hence, this IBM machine is almost noiseless for tasks like preparations and measurements.
 
 \subsubsection{Local Simulation: Eavesdropping but Noiseless}
 
@@ -84,34 +82,11 @@ $\begin{array}{l l}
 
 The QBER rises to 25\%, which coincides with the error rate discussed in section II.C. In addition, the average QBER over all five runs is approximately 25\%.
 
-\subsubsection{Local Simulation: Eavesdropping with Noise}
-
-In this experiment, we repeat the above simulation with depolarizing noise to examine the effect of noise on QBER. In the noiseless case above, the QBER is 25\%.
-Below are the outputs corresponding to one representative run.
-
-\noindent
-\resizebox{\columnwidth}{!}{%
-$\begin{array}{l l}
-\textbf{Alice's Bits:}       & 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1 \\
-\textbf{Alice's Bases:}      & Z, X, Z, Z, Z, X, X, Z, Z, X, Z, X, Z, X, X, Z, X, X, Z, X \\
-\textbf{Eve's Bases:}        & X, Z, Z, Z, Z, Z, Z, X, Z, Z, Z, Z, Z, Z, Z, X, Z, X, Z, X \\
-\textbf{Eve's Bits:}         & 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0 \\
-\textbf{Bob's Bases:}        & X, X, X, X, Z, Z, Z, X, Z, X, X, Z, Z, X, Z, X, X, Z, X, X \\
-\textbf{Bob's Bits:}         & 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0 \\
-\textbf{Alice's Sifted Key}  & 1, 1, 0, 0, 0, 1, 1, 1 \\
-\textbf{Bob's Sifted Key}    & 0, 1, 1, 0, 0, 1, 1, 0 \\
-\end{array}$%
-}
-
-The QBER for this run is 37.5\%. The average QBER over five runs is approximately 35\%, 
-which is higher than the corresponding value in the noiseless case, as expected. 
-This confirms that the effect of noise is consistent with our observations.
-
 
 \subsubsection{IBM Hardware Simulation: Eavesdropping with Noise}
 
 Finally, we simulate the intercept-resend attack by executing the BB84 protocol five times on IBM Quantum Platform.
-As seen above, the IBM hardware is slightly noisy. Below are the outputs corresponding to one representative run.
+Below are the outputs for one representative run.
 
 \noindent
 \resizebox{\columnwidth}{!}{%
@@ -131,8 +106,40 @@ As in the preceding local simulation case, the QBER for this run is 37.5\%, whil
 
 \subsection{Simulation of the Classical Post-Processing Component}
 
+This section shows the results of two key classical post-processing tasks: error correction and privacy amplification. 
+We also demonstrate one-time pad cryptography by showing how the plaintext "BB84" can be encrypted by Alice and decrypted by Bob using the shared key.
 
+\subsubsection{Error Correction: A Cascade Protocol}
 
+The main inputs to the function cascade\_protocol are Alice and Bob's sifted keys. Using the above simulation of BB84 with sufficiently low noise, we generated:
 
+\textbf{Alice's sifted key:}  [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1]
 
+\textbf{Bob's sifted key:}  [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1].
+
+The Cascade protocol first estimates QBER using a few bits selected from Alice and Bob's sifted keys. This requires Bob to give up a small number of his bits by sending them to Alice to estimate QBER. 
+Here, we selected the first 10 bits. If QBER $< 11\%$, error correction is performed on the sifted key.
+Cascade makes multiple passes with different block sizes in a way that errors corrected on the $i^{th}$ pass can reveal the location of more errors in another pass $i'$ where $i\ne i'$. 
+Cascade locates five mismatches, which are called $leakage$ because the non-zero parity check bits may reveal information to Eve, and corrects them. 
+
+\textbf{Bob's corrected key:} [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1],
+
+\noindent which matches Alice's sifted key.
+
+\subsubsection{Privacy Amplification: A Random Binary Toeplitz Matrix}
+
+The main task is to construct a random binary Toeplitz matrix of an appropriate size. First, we remove the 10 bits from the shared key that were used to estimate QBER during error correction. 
+Let $N$ be the key length. The number of rows is $N-leakage-s$, where $leakage=5$ was determined during error correction and $s=10$ is the security margin. 
+Thus, our Toeplitz matrix is of size $(N-15)\times N$. The final shared key is the product of this matrix with the $N$-bit shared key.
+
+\textbf{Final shared key}: [1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0].
+
+\subsubsection{One-Time Pad Encryption, Decryption}
+
+To encrypt the message "BB84", Alice truncates the final shared key to 32 bits and XORs it with the binary representation of "BB84". 
+
+\textbf{Ciphertext in bits}: 11001111101011000101001111011001.
+
+To decrypt the ciphertext, Bob truncates the final shared key and XORs it with the ciphertext. 
+We have assumed that Bob knows the plaintext's length. In practice, Alice pads the plaintext with 0's before encryption for Bob to extract the original message from the decrypted bit string.
 

@@ -32,9 +32,14 @@ Therefore, to yield a information-theoretic secure key, privacy amplification sh
     m < d - 2 k < H_c(W|Z) - 2 k
 \end{equation*}
 
-In practical implementations, Alice and Bob carry out privacy amplification independently once error correction is complete. We use the Toeplitz matrix hashing method to implement privacy amplification for two main reasons. First, it is computationally efficient and straightforward to implement. Second, Python provides convenient tools for generating random binary Toeplitz matrices, which simplifies the implementation.
+In practical implementations, Alice and Bob carry out privacy amplification independently once error correction is complete. 
+We use the Toeplitz matrix hashing method to implement privacy amplification because it is straightforward to generate random binary Toeplitz matrices in Python.
+Alice and Bob apply the same fixed random binary Toeplitz matrix to their shared key. The multiplication (modulo 2) results in the final shared key. This implicitly assumes that Alice and Bob have agreed on the matrix prior to privacy amplification. 
+This requirement is a limitation because the size of this matrix depends on the length of Alice and Bob's shared key as well as other security parameters, e.g., the estimated bit leakage. 
+See \cite{doi:10.1137/0217014, vanAssche2010} for more discussion on Toeplitz hashing and the process of privacy amplification. 
 
-In this approach, both parties apply the same fixed random binary Toeplitz matrix to their shared key. The multiplication modulo 2 results in the final shared key. This implicitly assumes that Alice and Bob have agreed on the matrix prior to privacy amplification. 
-This requirement may be inconvenient in some scenarios because the size of this matrix depends on the length of Alice and Bob's shared key as well as other security parameters such as the estimated bit leakage. 
-Hence, other sophisticated and more secure hashing methods may be needed to implement privacy amplification. 
-See \cite{doi:10.1137/0217014, vanAssche2010} for more discussion on the Toeplitz hashing approach and the process of privacy amplification. 
+The shared key obtained after privacy amplification can be directly used for one-time pad encryption. Claude Shannon proved that this scheme is information-theoretically secure \cite{shannon1949secrecy}. That is, its security does not depend on an adversary’s computational power, unlike classical or post-quantum cryptographic systems. 
+However, prior to the development of QKD, one-time pad systems were considered impractical because there was no way for two parties to securely generate and share a key without relying on a trusted third party. 
+We illustrate one-time pad encryption by showing how Alice’s plaintext “BB84” can be encrypted. To obtain a sufficiently long shared key for this purpose, we first simulate the BB84 protocol under low-noise conditions such that QBER $< 11\%$.
+Because the number of qubits that can be prepared within a single Qiskit quantum circuit is limited, the simulation must be executed multiple times. 
+We then concatenate the sifted keys obtained from each run. The resulting pair of sifted keys are finally processed through error correction and privacy amplification.
