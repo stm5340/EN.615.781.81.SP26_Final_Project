@@ -5,7 +5,10 @@ We assume that Alice and Bob have already established an authenticated classical
 
 Our Qiskit program is executed in a hybrid environment: locally and on IBM’s quantum platforms. To run the circuit on IBM hardware, we installed IBM Qiskit Runtime, created an IBM Cloud account, and obtained an access token for the simulation. IBM provides limited free access to its quantum processing units (QPUs), with a cap of 10 minutes of execution time per month on devices with over 100 qubits. Given these resource constraints, we restrict our implementation of BB84 QKD to 20 qubits for Alice.
 
-While our implementation follows IBM’s BB84 QKD framework, we have refactored the code into modular helper functions to improve clarity and reusability. The core components are outlined below:
+While our implementation follows IBM’s BB84 QKD framework \cite{IBM_QKD_website}, we have refactored the code into modular helper functions to improve clarity and reusability. 
+In addition, we also added the key classical post-processing steps: error correction and privacy amplification.
+
+The core components are outlined below:
 
 (a) To support pseudorandom number generation for Alice, Bob, and Eve (used for randomly selecting measurement bases and for Alice’s bit-string generation) we define two helper functions: get\_rn\_generator and sample\_bits. The former allows the use of a random seed for reproducibility; if the seed is set to None, the results vary across runs. The latter uses this generator to produce random bit strings.
 

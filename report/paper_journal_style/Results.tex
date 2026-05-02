@@ -20,7 +20,8 @@ $\begin{array}{l l}
 \end{array}$%
 }
 
-Since Alice and Bob's sifted keys are identical, the qubit error rate (QBER) is zero in this ideal scenario.
+Since Alice and Bob's sifted keys are identical, the qubit error rate (QBER) is zero in this ideal scenario. 
+Hence, based on the typical ~11\% security threshold in BB84, as discussed in Section II.C, Alice and Bob would proceed to the error-correcting step.
 
 \subsubsection{Local Simulation: Noisy but without Eavesdropping}
 
@@ -39,8 +40,8 @@ $\begin{array}{l l}
 \end{array}$%
 }
 
-Since Alice and Bob's sifted keys differ in two bits out of nine, the QBER is now 2/9, which is approximately 22\%. 
-Hence, adding noise results in an increase in QBER.
+Since Alice and Bob’s sifted keys differ in 2 out of 9 bits, the QBER is $2/9 \approx 22\%$. This increase reflects the added noise. 
+Because this exceeds the 11\% threshold, Alice and Bob would abort the protocol in this case.
 
 \subsubsection{IBM Hardware Simulation: Noisy but without Eavesdropping}
 
