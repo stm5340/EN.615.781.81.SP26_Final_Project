@@ -1,9 +1,13 @@
 \subsection{Classical Post-Processing} \label{sec:downstream}
 % Classical Error Correction
-The QBER can be reduced by classical post-processing step known as information reconciliation, which is an error-correction algorithm performed over the communication channel. It's critical that Bob and Alice perform this correction without leaking too much information to Eve, otherwise the resulting key won't be a secret. There are numerous processes that can be used to find the location of a bit error while minimizing information leakage. One such process is the Cascade protocol. In this protocol, Alice and Bob partition their key strings into blocks of equal size (the block size is inversely proportional to the QBER) and publicly compare the parity of each block. If a block has different parity, then Bob (and Eve) knows that at least one bit flip occurred in his block. Bob and Alice can then perform a binary search on the block by comparing the parity of sub-blocks until a single bit flip is isolated. After an initial passthrough, Alice and Bob permute their key string and repeat the process using a different block size. By doing so, new parity errors in the permuted blocks can be identified, lowering the bit error rate further. Note that this process avoids publicly comparing each bit in the key over the communication channel, otherwise Eve would have knowledge of the entire key.
+The QBER can be reduced by classical post-processing step known as information reconciliation, which is an error-correction algorithm performed over the communication channel. It's critical that Bob and Alice perform this correction without leaking too much information to Eve, otherwise the resulting key won't be a secret. There are numerous processes that can be used to find the location of a bit error while minimizing information leakage. 
+One such process is the Cascade protocol. In this protocol, Alice and Bob partition their key strings into blocks of equal size (the block size is inversely proportional to the QBER) and publicly compare the parity of each block. 
+If a block has different parity, then Bob (and Eve) knows that at least one bit flip occurred in his block. Bob and Alice can then perform a binary search on the block by comparing the parity of sub-blocks until a single bit flip is isolated. 
+After an initial passthrough, Alice and Bob permute their key string and repeat the process using a different block size. By doing so, new parity errors in the permuted blocks can be identified, lowering the bit error rate further. Note that this process avoids publicly comparing each bit in the key over the communication channel, otherwise Eve would have knowledge of the entire key.
+We implement a simple version of backtracking in which Bob corrects his sifted key to match Alice's sifted key based on the parity of their corresponding bits \cite{reis2019qkd, 10210554}.
 
 % Privacy Amplification
-\cite{nielsen2010quantum} provides an information-theoretic justification for privacy amplification. After information reconciliation, Alice and Bob have resolved discrepancies between their respective bit strings creating a shared key, but Eve may have non-negligible information about the  key that poses a security risk. Eve's uncertainty about the key is modeled using entropy, more specifically the collision entropy:
+Reference \cite{nielsen2010quantum} provides an information-theoretic justification for privacy amplification. After information reconciliation, Alice and Bob have resolved discrepancies between their respective bit strings creating a shared key, but Eve may have non-negligible information about the  key that poses a security risk. Eve's uncertainty about the key is modeled using entropy, more specifically the collision entropy:
 \begin{equation*}
     H_c(X) = -\log(\sum_x p(x)^2)
 \end{equation*}
@@ -28,3 +32,9 @@ Therefore, to yield a information-theoretic secure key, privacy amplification sh
     m < d - 2 k < H_c(W|Z) - 2 k
 \end{equation*}
 
+In practical implementations, Alice and Bob carry out privacy amplification independently once error correction is complete. We use the Toeplitz matrix hashing method to implement privacy amplification for two main reasons. First, it is computationally efficient and straightforward to implement. Second, Python provides convenient tools for generating random binary Toeplitz matrices, which simplifies the implementation.
+
+In this approach, both parties apply the same fixed random binary Toeplitz matrix to their shared key. The multiplication modulo 2 results in the final shared key. This implicitly assumes that Alice and Bob have agreed on the matrix prior to privacy amplification. 
+This requirement may be inconvenient in some scenarios because the size of this matrix depends on the length of Alice and Bob's shared key as well as other security parameters such as the estimated bit leakage. 
+Hence, other sophisticated and more secure hashing methods may be needed to implement privacy amplification. 
+See \cite{doi:10.1137/0217014, vanAssche2010} for more discussion on the Toeplitz hashing approach and the process of privacy amplification. 
