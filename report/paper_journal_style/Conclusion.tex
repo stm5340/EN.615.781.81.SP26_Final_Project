@@ -1,6 +1,6 @@
 \section{Conclusion} \label{conclusion}
 
-We implemented the original BB84 QKD protocol across a range of scenarios, from the ideal case to more realistic settings involving noise and eavesdropping, to illustrate how fundamental quantum mechanical principles, such as the no-cloning theorem and the indistinguishability of non-orthogonal states.
+We implemented the original BB84 QKD protocol across a variety of scenarios, from the ideal case to more realistic settings with noise and eavesdropping, to highlight the role of quantum information in cryptography, particularly in enabling the one-time pad paradigm.
 In addition, we incorporated the classical post-processing stages, namely error correction and privacy amplification, to demonstrate the full workflow of the protocol. Our results show that both noise and eavesdropping increase the QBER, thereby affecting Alice and Bob’s decision on whether to abort the protocol or proceed with post-processing. We also discussed the origin of the 11\% QBER threshold.
 Several limitations of our approach were observed. Due to constraints in Qiskit, we were unable to generate sifted keys longer than 25 bits in a single run. 
 Furthermore, our implementation relies on simplifying assumptions made for convenience, although these could readily be relaxed with extra work. 
