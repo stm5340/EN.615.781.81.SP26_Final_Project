@@ -18,11 +18,11 @@ The core components are outlined below:
 \label{figencoding}
 \end{figure}
 
-(c) If we simulate eavesdropping, then Eve intercepts each qubit sent by Alice. She measures it using a randomly chosen basis, records the outcome, and forwards the resulting state to Bob.
+(c) To simulate eavesdropping, Eve intercepts each qubit sent by Alice. She measures it using a randomly chosen basis, records the outcome, and forwards the resulting state to Bob.
 
-(d) Bob measures the incoming qubits bsed on a randomly chosen basis for each bit; the measurements are then converted to classical bits according to the encoding scheme. The incoming qubits are either from Alice or Eve, depending on the scenario.
+(d) Bob measures the incoming qubits in a randomly chosen basis for each bit; the measurements are then converted to classical bits according to the encoding scheme. The incoming qubits are either from Alice or Eve, depending on the scenario.
 
-(e) Sift the keys. Alice and Bob compare their basis choices and retain only the bits for which they used the same basis. In practice, Alice and Bob exchange their basis choices over the authenticated classical channel; this exchange is not explicitly simulated here. We assume an authenticated, secure, classical channnel.
+(e) Sift the keys. Alice and Bob compare their basis choices and retain only the bits for which they used the same basis. In practice, Alice and Bob exchange their basis choices over the authenticated classical channel; this exchange is not explicitly simulated here.
 
 (f) Compute the quantum bit error rate (QBER). We compare Alice’s and Bob’s sifted keys and calculate the fraction of differing bits. In the absence of noise and eavesdropping, QBER should be zero.
 
