@@ -12,7 +12,7 @@ The core components are outlined below:
 
 (a) To support pseudorandom number generation for Alice, Bob, and Eve (used for randomly selecting measurement bases and for Alice’s bit-string generation) we define two helper functions: get\_rn\_generator and sample\_bits. The former allows the use of a random seed for reproducibility; if the seed is set to None, the results vary across runs. The latter uses this generator to produce random bit strings.
 
-(b) To implement Alice’s encoding, we define the helper function encode\_bb84\_states, which specifies how Alice prepares her qubits based on her randomly generated bit string and randomly chosen bases. Figure XX illustrates this publicly known encoding scheme.
+(b) To implement Alice’s encoding, we define the helper function encode\_bb84\_states, which specifies how Alice prepares her qubits based on her randomly generated bit string and randomly chosen bases. Figure \ref{figencoding} illustrates this publicly known encoding scheme.
 
 \begin{figure}[htbp]
 \centering

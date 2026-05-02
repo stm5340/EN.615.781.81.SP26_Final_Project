@@ -25,7 +25,7 @@ Hence, based on the typical ~11\% security threshold in BB84, as discussed in Se
 
 \subsubsection{Local Simulation: Noisy but without Eavesdropping}
 
-We add depolarizing noise to the circuit that simulates Alice's preparations and Bob's measurements.
+We add depolarizing noise with a bit flip probability of 0.05 and measurement error of 0.3 to the circuit that simulates Alice's preparations and Bob's measurements.
 Again, we run this simulation five times and observe the QBER. The outputs presented below correspond to one representative run.
 
 \noindent
@@ -42,6 +42,15 @@ $\begin{array}{l l}
 
 Since Alice and Bob’s sifted keys differ in 2 out of 9 bits, the QBER is $2/9 \approx 22\%$. This increase reflects the added noise. 
 Because this exceeds the 11\% threshold, Alice and Bob would abort the protocol in this case.
+
+\begin{figure}[htbp]
+\centering
+\centerline{\includegraphics[width=\columnwidth]{Figures/exp22meanloss.png}}
+\caption{Loss: sweep over error rates}
+\label{exp22meanloss}
+\end{figure}
+
+The error rates need to be sufficiently low in order for Alice and Bob to be successful, as shown by the trends in \ref{exp22meanloss}. These were averaged over 25 runs to achieve a more accurate mean loss, particularly for a bitstring of only 9. A system with a measurement error rate of strictly less than 0.1 and a depolarization error rate of 0.05 or less should have low enough noise for Alice and Bob to successfully perform QKD.
 
 \subsubsection{IBM Hardware Simulation: Noisy but without Eavesdropping}
 
@@ -127,7 +136,7 @@ $\begin{array}{l l}
 \end{array}$%
 }
 
-As in the preceding local simulation case, the QBER for this run is 37.5\%, while the average over all five runs is 27.5\%.
+As in the preceding local simulation case, the QBER for this run is 37.5\%, while the average over all five runs is 27.5\%. Using a similar approach as before to sweep over the error rates, we find that the bounds used for the sweep in the no-eavesdropping case are insufficient to drive the total loss below the threshold of 11\%. As a result, Eve is able to prevent Alice and Bob from having a low enough error rate to produce a key successfully.
 
 \subsection{Simulation of the Classical Post-Processing Component}
 
